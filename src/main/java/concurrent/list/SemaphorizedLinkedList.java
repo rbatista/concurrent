@@ -83,8 +83,8 @@ public class SemaphorizedLinkedList<E> {
 
         size++;
 
-        oldTailSemaphore.release();
         tailSemaphore.release();
+        oldTailSemaphore.release();
     }
 
     public void insertAt(E element, int index) {
@@ -152,8 +152,8 @@ public class SemaphorizedLinkedList<E> {
 
         size++;
 
-        predSemaphore.release();
         succ.semaphore.release();
+        predSemaphore.release();
     }
 
     private Node<E> node(int index) {
@@ -202,8 +202,8 @@ public class SemaphorizedLinkedList<E> {
         node.element = null;
         size--;
 
-        prevSemaphore.release();
         nextSemaphore.release();
+        prevSemaphore.release();
 
         return element;
     }
