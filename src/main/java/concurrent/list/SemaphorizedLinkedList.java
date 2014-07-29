@@ -19,7 +19,7 @@ import java.util.concurrent.Semaphore;
  *
  * @param <E>
  */
-public class SynchronizedLinkedList<E> {
+public class SemaphorizedLinkedList<E> {
 
     private Node<E> head = null;
     private Node<E> tail = null;
