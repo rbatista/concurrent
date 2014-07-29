@@ -2,6 +2,7 @@ package concurrent.list;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -76,15 +77,47 @@ public class SynchronizedLinkedListTest {
         SynchronizedLinkedList<Integer> list0 = new SynchronizedLinkedList<>();
         List<Integer> list1 = Collections.synchronizedList(new LinkedList<Integer>());
 
+        List<Inserter> inserters = Arrays.asList(new BeginInserter(list0, 1000),
+             new BeginInserter(list0, 1000),
+             new BeginInserter(list0, 1000),
+             new BeginInserter(list0, 1000),
+             new BeginInserter(list0, 1000),
+             new BeginInserter(list0, 1000),
+             new EndInserter(list0, 1000),
+             new EndInserter(list0, 1000),
+             new EndInserter(list0, 1000),
+             new EndInserter(list0, 1000),
+             new EndInserter(list0, 1000));
+
         long time0 = System.currentTimeMillis();
-        for (int i = 0; i < 10000; i++) {
-            list0.insertFirst(i);
+        for (Inserter inserter : inserters) {
+            inserter.start();
+        }
+
+        for (Inserter inserter : inserters) {
+            inserter.join();
         }
         time0 = System.currentTimeMillis() - time0;
 
+        List<Inserter> inserters2 = Arrays.asList(new BeginInserter(list1, 1000),
+                new BeginInserter(list1, 1000),
+                new BeginInserter(list1, 1000),
+                new BeginInserter(list1, 1000),
+                new BeginInserter(list1, 1000),
+                new BeginInserter(list1, 1000),
+                new EndInserter(list1, 1000),
+                new EndInserter(list1, 1000),
+                new EndInserter(list1, 1000),
+                new EndInserter(list1, 1000),
+                new EndInserter(list1, 1000));
+
         long time1 = System.currentTimeMillis();
-        for (int i = 0; i < 10000; i++) {
-            list1.add(0, i);
+        for (Inserter inserter : inserters2) {
+            inserter.start();
+        }
+
+        for (Inserter inserter : inserters2) {
+            inserter.join();
         }
         time1 = System.currentTimeMillis() - time1;
 
@@ -92,5 +125,61 @@ public class SynchronizedLinkedListTest {
         System.out.println(time1);
 
         assertTrue(time0 <= time1);
+    }
+
+    abstract class Inserter extends Thread {
+        protected List<Integer> list;
+        protected int size;
+
+        public Inserter(List<Integer> list, int size) {
+            this.list = list;
+            this.size = size;
+        }
+
+        @Override
+        public void run() {
+            for (int i = 0; i < size; i++) {
+                insert(i);
+            }
+        }
+
+        abstract void insert(Integer i);
+    }
+
+    class BeginInserter extends Inserter {
+
+        public BeginInserter(List<Integer> list, int size) {
+            super(list, size);
+        }
+
+        @Override
+        void insert(Integer i) {
+            list.add(0, i);
+        }
+    }
+
+    class EndInserter extends Inserter {
+
+        public EndInserter(List<Integer> list, int size) {
+            super(list, size);
+        }
+
+        @Override
+        void insert(Integer i) {
+            list.add(i);
+        }
+    }
+
+    class MiddleInserter extends Inserter {
+
+        public MiddleInserter(List<Integer> list, int size) {
+            super(list, size);
+        }
+
+        @Override
+        void insert(Integer i) {
+            list.add(i, list.size() / 2);
+        }
+
     }
 }
